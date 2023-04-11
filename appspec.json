@@ -8,6 +8,24 @@
       },
       {
         "name": "move"
+      },
+      {
+        "name": "ctmm"
+      },
+      {
+        "name": "ggplot2"
+      },
+      {
+        "name": "dplyr"
+      },
+      {
+        "name": "tidyr"
+      },
+      {
+        "name": "ggiraph"
+      },
+      {
+        "name": "hrbrthemes"
       }
     ]
   },
