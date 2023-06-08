@@ -87,10 +87,13 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     req(input$select_var)
     if(input$select_var == "Speed"){
       map2(data, outl, ~ ..1[..2$speed >= input$slider_filter[1] & ..2$speed <= input$slider_filter[2]])
-    } else {
+    } else if(input$select_var == "Distance"){
       map2(data, outl, ~ ..1[..2$speed >= input$slider_filter[1] & ..2$speed <= input$slider_filter[2]])
     }
     })) ## if data are not modified, the unmodified input data must be returned
 }
+
+
+
 
 
