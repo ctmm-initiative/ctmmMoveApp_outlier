@@ -1,11 +1,12 @@
 library(shiny)
 library(move)
-library(ctmm)
 library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(ggiraph)
 library(hrbrthemes)
+library(ctmm)
+library(purrr)
 
 # set some default styling for ggirafe
 css_default_hover <- girafe_css_bicolor(primary = "#8f7d75", secondary = "#fadccf")
@@ -42,7 +43,7 @@ shinyModuleUserInterface <- function(id, label) {
 shinyModule <- function(input, output, session, data){ ## The parameter "data" is reserved for the data object passed on from the previous app
   ns <- session$ns ## all IDs of UI functions need to be wrapped in ns()
   
-  outl <- lapply(data, \(x) ctmm::outlie(x, plot = FALSE))
+  outl <- lapply(data, \(x) outlie(x, plot = FALSE))
   
   reactive_data <- reactive({
     outl_tibbl <- unlist(sapply(outl, \(x) x[, input$select_var])) 
@@ -83,7 +84,13 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
   
   return(reactive({ 
     req(input$slider_filter)
-    reactive_data() |> 
-      filter(speed >= input$slider_filter[1] & speed <= input$slider_filter[2]) 
+    req(input$select_var)
+    if(input$select_var == "Speed"){
+      map2(data, outl, ~ ..1[..2$speed >= input$slider_filter[1] & ..2$speed <= input$slider_filter[2]])
+    } else if (input$select_var == "Distance") {
+      map2(data, outl, ~ ..1[..2$distance >= input$slider_filter[1] & ..2$distance <= input$slider_filter[2]])
+    }
     })) ## if data are not modified, the unmodified input data must be returned
 }
+
+
