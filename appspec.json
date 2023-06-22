@@ -1,5 +1,34 @@
 {
-  "settings": [],
+  "settings": [
+    {
+      "id": "select_var",
+      "name": "Select Variable",
+      "description": "Select the variable for outlier detection. Possible values are 'speed' or 'distance'.",
+      "type": "DROPDOWN",
+      "defaultValue": null,
+      "options": [
+        {
+          "value": null,
+          "displayText": "Empty Selection"
+        },
+
+        {
+          "value": "speed",
+          "displayText": "Speed"
+        },
+        {
+          "value": "distance",
+          "displayText": "Distance"
+        }]
+    }, 
+    {
+      "id": "moreControls",
+      "name": "Value range",
+      "description": "The range of acceptable values",
+      "defaultValue": "Range from 0 to maximum",
+      "type": "DOUBLE"
+    }
+  ],
   "dependencies": {
     "R": [
       {
@@ -38,20 +67,33 @@
   },
   "language": "eng",
   "keywords": [
-    "example",
-    "template"
+    "ctmm",
+    "outlier"
   ],
   "people": [
     {
-      "firstName": "Charles",
+      "firstName": "Marco",
       "middleInitials": null,
-      "lastName": "Darwin",
-      "email": "creator@example.com",
+      "lastName": "Sciaini",
+      "email": "marco@kaldera.dev",
       "roles": [
         "author",
         "creator"
       ],
-      "orcid": null,
+      "orcid": "0000-0002-3042-5435",
+      "affiliation": null,
+      "affiliationRor": null
+    }, 
+    {
+      "firstName": "Johannes",
+      "middleInitials": null,
+      "lastName": "Signer",
+      "email": "jmsigner@gmail.com",
+      "roles": [
+        "author",
+        "creator"
+      ],
+      "orcid": "0000-0002-1771-7775" ,
       "affiliation": null,
       "affiliationRor": null
     }
@@ -65,12 +107,12 @@
   "references": [
     {
       "type": "IsDescribedBy",
-      "note": "Darwin, C. 1900. The creation. Journal XY. 1-2",
-      "url": "https://anylink.xyz"
+      "note": "Documentation of the `outlie()`-Function",
+      "url": "https://ctmm-initiative.github.io/ctmm/reference/outlie.html"
     }
   ],
   "documentation": {
-    "url": "https://github.com/yourAccount/Name-of-App/.../README.md"
+    "url": "https://github.com/marcosci/ctmm_outlier/
   }
 }
 
