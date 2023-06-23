@@ -1,39 +1,8 @@
 {
-  "settings": [
-    {
-      "id": "select_var",
-      "name": "Select Variable",
-      "description": "Select the variable for outlier detection. Possible values are 'speed' or 'distance'.",
-      "type": "DROPDOWN",
-      "defaultValue": null,
-      "options": [
-        {
-          "value": null,
-          "displayText": "Empty Selection"
-        },
-
-        {
-          "value": "speed",
-          "displayText": "Speed"
-        },
-        {
-          "value": "distance",
-          "displayText": "Distance"
-        }]
-    }, 
-    {
-      "id": "moreControls",
-      "name": "Value range",
-      "description": "The range of acceptable values",
-      "defaultValue": "Range from 0 to maximum",
-      "type": "DOUBLE"
-    }
-  ],
   "dependencies": {
     "R": [
       {
         "name": "lubridate",
-        "version": "1.7.10"
       },
       {
         "name": "move"
@@ -81,7 +50,7 @@
         "creator"
       ],
       "orcid": "0000-0002-3042-5435",
-      "affiliation": null,
+      "affiliation": "Kaldera",
       "affiliationRor": null
     }, 
     {
@@ -94,13 +63,13 @@
         "creator"
       ],
       "orcid": "0000-0002-1771-7775" ,
-      "affiliation": null,
-      "affiliationRor": null
+      "affiliation": "University of Goettingen",
+      "affiliationRor": "01y9bpm73"
     }
   ],
   "funding": [
     {
-      "name": "funder name",
+      "name": "Friends of the North Carolina State",
       "comment": "grant for App"
     }
   ],
@@ -112,7 +81,7 @@
     }
   ],
   "documentation": {
-    "url": "https://github.com/marcosci/ctmm_outlier/
+    "url": "https://github.com/marcosci/ctmm_outlier/"
   }
 }
 
