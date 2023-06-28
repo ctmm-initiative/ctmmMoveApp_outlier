@@ -13,7 +13,7 @@ css_default_hover <- girafe_css_bicolor(primary = "#8f7d75", secondary = "#fadcc
 hrbrthemes::import_roboto_condensed()
 
 set_girafe_defaults(
-  opts_hover = opts_hover(css = css_default_hover),
+  # opts_hover = opts_hover(css = css_default_hover),
   opts_zoom = opts_zoom(min = 1, max = 4),
   opts_tooltip = opts_tooltip(css = "padding:3px;background-color:#333333;color:white;"),
   opts_sizing = opts_sizing(rescale = TRUE),
@@ -36,6 +36,7 @@ shinyModuleUserInterface <- function(id, label) {
           "Distance" = "distance")
     ),
     uiOutput(ns("moreControls")),
+    uiOutput(ns("moreControls2")),
     girafeOutput(ns("plot"))
   )
 }
@@ -58,13 +59,38 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
   })
   
   observeEvent(reactive_data(), {
+    
+    quantiles = quantile(reactive_data()$speed, probs = seq(0, round(max(reactive_data()$speed)), by = 0.05))
+    
+    max_range <- round(max(reactive_data()$speed))
+    max_range
+    names(quantiles)
+    c(unique(as.numeric(quantiles)), round(max(reactive_data()$speed)))
+    
     output$moreControls <- renderUI({
-     tagList(
-       sliderInput(ns("slider_filter"), "Decimal:",
-                   min = 0, max = round(max(reactive_data()$speed)),
-                   value = c(round(min(reactive_data()$speed)), round(max(reactive_data()$speed))),
-     ))
-   })
+      tagList(
+        shinyWidgets::sliderTextInput(inputId = "decade", 
+                                      label = "Range:", 
+                                      choices = c(unique(as.numeric(quantiles)), round(max(reactive_data()$speed))))
+      )
+    })
+    
+    output$moreControls2 <- renderUI({
+      tagList(
+        shinyWidgets::sliderTextInput(ns("slider_filterperc"), 
+                                      label = "Percentile:",
+                                      choices = names(quantiles))
+      )
+    })
+  })
+
+  observeEvent(input$slider_filter,  {
+    updateSliderInput(session = session, inputId = "Empty", value = 1 - input$Full)
+  })
+  
+  # when air change, update water
+  observeEvent(input$Empty,  {
+    updateSliderInput(session = session, inputId = "Full", value = 1 - input$Empty)
   })
   
   output$plot <- renderGirafe({
@@ -75,8 +101,7 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
       filter(speed >= input$slider_filter[1] & speed <= input$slider_filter[2])
     
     gg <- ggplot(plot_data, aes(x=speed)) + 
-      geom_histogram_interactive(hover_nearest = TRUE, aes(tooltip = after_stat(count),
-                                                                     data_id = after_stat(count))) +
+      geom_histogram_interactive(hover_nearest = TRUE) +
       theme_ipsum_rc()
     girafe(ggobj = gg)
 
