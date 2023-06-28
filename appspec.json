@@ -1,10 +1,8 @@
 {
-  "settings": [],
   "dependencies": {
     "R": [
       {
         "name": "lubridate",
-        "version": "1.7.10"
       },
       {
         "name": "move"
@@ -41,39 +39,52 @@
   },
   "language": "eng",
   "keywords": [
-    "example",
-    "template"
+    "ctmm",
+    "outlier"
   ],
   "people": [
     {
-      "firstName": "Charles",
+      "firstName": "Marco",
       "middleInitials": null,
-      "lastName": "Darwin",
-      "email": "creator@example.com",
+      "lastName": "Sciaini",
+      "email": "marco@kaldera.dev",
       "roles": [
         "author",
         "creator"
       ],
-      "orcid": null,
-      "affiliation": null,
+      "orcid": "0000-0002-3042-5435",
+      "affiliation": "Kaldera",
       "affiliationRor": null
+    }, 
+    {
+      "firstName": "Johannes",
+      "middleInitials": null,
+      "lastName": "Signer",
+      "email": "jmsigner@gmail.com",
+      "roles": [
+        "author",
+        "creator"
+      ],
+      "orcid": "0000-0002-1771-7775" ,
+      "affiliation": "University of Goettingen",
+      "affiliationRor": "01y9bpm73"
     }
   ],
   "funding": [
     {
-      "name": "funder name",
+      "name": "Friends of the North Carolina State",
       "comment": "grant for App"
     }
   ],
   "references": [
     {
       "type": "IsDescribedBy",
-      "note": "Darwin, C. 1900. The creation. Journal XY. 1-2",
-      "url": "https://anylink.xyz"
+      "note": "Documentation of the `outlie()`-Function",
+      "url": "https://ctmm-initiative.github.io/ctmm/reference/outlie.html"
     }
   ],
   "documentation": {
-    "url": "https://github.com/yourAccount/Name-of-App/.../README.md"
+    "url": "https://github.com/marcosci/ctmm_outlier/"
   }
 }
 
