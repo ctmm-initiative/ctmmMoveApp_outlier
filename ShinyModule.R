@@ -28,6 +28,10 @@ shinyModuleUserInterface <- function(id, label) {
   ns <- NS(id) ## all IDs of UI functions need to be wrapped in ns()
   tagList(
     titlePanel("Outlier detection"),
+    ## Add here outline plot 
+    ## plot(outlie)
+    ## And a brief description of the plot
+    ## hr(),
     selectInput(
       ns("select_var"),
       label = "Select Variable",
