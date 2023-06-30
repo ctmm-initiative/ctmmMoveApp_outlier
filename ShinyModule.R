@@ -7,6 +7,7 @@ library(ggiraph)
 library(hrbrthemes)
 library(ctmm)
 library(purrr)
+library(shinyWidgets)
 
 # set some default styling for ggirafe
 css_default_hover <- girafe_css_bicolor(primary = "#8f7d75", secondary = "#fadccf")
@@ -28,6 +29,8 @@ shinyModuleUserInterface <- function(id, label) {
   ns <- NS(id) ## all IDs of UI functions need to be wrapped in ns()
   tagList(
     titlePanel("Outlier detection"),
+    plotOutput(ns("outl_plot")),
+    hr(),
     selectInput(
       ns("select_var"),
       label = "Select Variable",
@@ -46,6 +49,10 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
   
   outl <- lapply(data, \(x) outlie(x, plot = FALSE))
   
+  output$outl_plot <- renderPlot({
+    plot(outl)
+  })
+  
   reactive_data <- reactive({
     outl_tibbl <- unlist(sapply(outl, \(x) x[, input$select_var])) 
     outl_tibbl <- outl_tibbl|> 
@@ -53,52 +60,63 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
       pivot_longer(everything(), names_to = "Individium", values_to = "speed")
   })
   
-  y <- reactive({
-    req(input$y)
-    input$y
-  })
-  
   observeEvent(reactive_data(), {
     
-    quantiles = quantile(reactive_data()$speed, probs = seq(0, round(max(reactive_data()$speed)), by = 0.05))
+    req(reactive_data())
     
-    max_range <- round(max(reactive_data()$speed))
-    max_range
-    names(quantiles)
-    c(unique(as.numeric(quantiles)), round(max(reactive_data()$speed)))
+    quantiles = quantile(reactive_data()$speed, probs = seq(0, 1, by = 0.05))
+    quantiles = quantiles[!duplicated(quantiles)]
+    
+    # if(input$select_var == "speed") browser()
     
     output$moreControls <- renderUI({
+      
       tagList(
-        shinyWidgets::sliderTextInput(inputId = "decade", 
-                                      label = "Range:", 
-                                      choices = c(unique(as.numeric(quantiles)), round(max(reactive_data()$speed))))
+        sliderTextInput(ns("slider_filtertest"), 
+                        label = "Range:", 
+                        choices = round(as.numeric(quantiles), 6), 
+                        selected = round(c(unique(as.numeric(quantiles))[1], as.numeric(quantiles)[length(as.numeric(quantiles))]), 6)
+        )
       )
     })
     
     output$moreControls2 <- renderUI({
       tagList(
-        shinyWidgets::sliderTextInput(ns("slider_filterperc"), 
-                                      label = "Percentile:",
-                                      choices = names(quantiles))
+        sliderTextInput(ns("slider_filterperc"), 
+                        label = "Percentile:",
+                        choices = names(quantiles),
+                        selected = c(names(quantiles)[1],
+                                     names(quantiles)[length(names(quantiles))]))
       )
     })
   })
 
-  observeEvent(input$slider_filter,  {
-    updateSliderInput(session = session, inputId = "Empty", value = 1 - input$Full)
-  })
-  
-  # when air change, update water
-  observeEvent(input$Empty,  {
-    updateSliderInput(session = session, inputId = "Full", value = 1 - input$Empty)
-  })
+  observeEvent(input$slider_filtertest,  {
+    req(input$slider_filterperc)
+    quantiles = quantile(reactive_data()$speed, probs = seq(0, 1, by = 0.05))
+    quantiles = quantiles[!duplicated(quantiles)]
+    ind <- which(round(as.numeric(quantiles), 6) %in% round(as.numeric(input$slider_filtertest), 6))
+    print(paste0("Range: ", names(quantiles)[ind]))
+    updateSliderTextInput(session = session, inputId = "slider_filterperc", selected = names(quantiles)[ind])
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$slider_filterperc,  {
+    req(input$slider_filtertest)
+    # browser()
+
+    quantiles = quantile(reactive_data()$speed, probs = seq(0, 1, by = 0.05))
+    quantiles = quantiles[!duplicated(quantiles)]
+    ind <- which(names(quantiles) %in% input$slider_filterperc)
+    print(paste0("Percentile: ", as.numeric(quantiles)[ind]))
+    updateSliderTextInput(session = session, inputId = "slider_filtertest", selected = round(as.numeric(quantiles)[ind], 6))
+    }, ignoreInit = TRUE)
   
   output$plot <- renderGirafe({
     
-    req(input$slider_filter)
+    req(input$slider_filtertest)
     
     plot_data <- reactive_data() |> 
-      filter(speed >= input$slider_filter[1] & speed <= input$slider_filter[2])
+      filter(speed >= input$slider_filtertest[1] & speed <= input$slider_filtertest[2])
     
     gg <- ggplot(plot_data, aes(x=speed)) + 
       geom_histogram_interactive(hover_nearest = TRUE) +
@@ -115,8 +133,8 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     if(input$select_var == "speed"){
       map2(data, outl, function(a,b){
         
-        ind <- which(b$speed >= input$slider_filter[1] & 
-                       b$speed <= input$slider_filter[2])
+        ind <- which(b$speed >= input$slider_filtertest[1] & 
+                       b$speed <= input$slider_filtertest[2])
         if (length(ind) > 0) {
           a[ind, ]
         } else {
@@ -127,8 +145,8 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     } else if(input$select_var == "distance"){
       map2(data, outl, function(a,b){
         
-        ind <- which(b$speed >= input$slider_filter[1] & 
-                       b$speed <= input$slider_filter[2])
+        ind <- which(b$speed >= input$slider_filtertest[1] & 
+                       b$speed <= input$slider_filtertest[2])
         if (length(ind) > 0) {
           a[ind, ]
         } else {
