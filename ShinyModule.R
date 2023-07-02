@@ -29,8 +29,8 @@ shinyModuleUserInterface <- function(id, label) {
   ns <- NS(id) ## all IDs of UI functions need to be wrapped in ns()
   tagList(
     titlePanel("Outlier detection"),
-    p("On the x-axis distances from the median longitude and latitude are ploted and on the y-axis the minimum speed required to explain the location estimate's displacement as straight-line motion."), 
     plotOutput(ns("outl_plot")),
+    p("On the x-axis distances from the median longitude and latitude are ploted and on the y-axis the minimum speed required to explain the location estimate's displacement as straight-line motion."), 
     hr(),
     selectInput(
       ns("select_var"),
@@ -97,7 +97,7 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     quantiles = quantile(reactive_data()$speed, probs = seq(0, 1, by = 0.05))
     quantiles = quantiles[!duplicated(quantiles)]
     ind <- which(round(as.numeric(quantiles), 6) %in% round(as.numeric(input$slider_filtertest), 6))
-    print(paste0("Range: ", names(quantiles)[ind]))
+    # print(paste0("Range: ", names(quantiles)[ind]))
     updateSliderTextInput(session = session, inputId = "slider_filterperc", selected = names(quantiles)[ind])
   }, ignoreInit = TRUE)
 
@@ -108,7 +108,7 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     quantiles = quantile(reactive_data()$speed, probs = seq(0, 1, by = 0.05))
     quantiles = quantiles[!duplicated(quantiles)]
     ind <- which(names(quantiles) %in% input$slider_filterperc)
-    print(paste0("Percentile: ", as.numeric(quantiles)[ind]))
+#    print(paste0("Percentile: ", as.numeric(quantiles)[ind]))
     updateSliderTextInput(session = session, inputId = "slider_filtertest", selected = round(as.numeric(quantiles)[ind], 6))
     }, ignoreInit = TRUE)
   
