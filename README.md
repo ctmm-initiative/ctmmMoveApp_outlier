@@ -16,7 +16,7 @@ A `telemetry.list` object.
 A `telemetry.list` with relocations that fall below a given user-specified threshold removed. 
 
 ### Artefacts
-`app_output.rds`: a R data file with the filtered data. 
+none
 
 ### Settings
 `Select variable`: select a variable to be used for filtering. 
