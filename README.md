@@ -2,7 +2,7 @@
 
 MoveApps
 
-Github repository: https://github.com/ctmm-initiative/ctmm_outlier
+Github repository: https://github.com/ctmm-initiative/moveapps_ctmm_outlier
 
 ## Description
 This app allows to detect relocation that are likely outlier based on speed and distance traveled. 
