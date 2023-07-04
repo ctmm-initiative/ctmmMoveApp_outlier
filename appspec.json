@@ -2,7 +2,7 @@
   "dependencies": {
     "R": [
       {
-        "name": "lubridate",
+        "name": "shiny",
       },
       {
         "name": "ctmm"
