@@ -30,7 +30,7 @@
       }
     ]
   },
-  "createsArtifacts": true,
+  "createsArtifacts": false,
   "license": {
     "key": "MIT"
   },
