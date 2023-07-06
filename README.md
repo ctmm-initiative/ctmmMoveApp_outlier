@@ -5,7 +5,7 @@ MoveApps
 Github repository: https://github.com/ctmm-initiative/moveapps_ctmm_outlier
 
 ## Description
-This app allows to detect relocation that are likely outlier based on speed and distance traveled. 
+This app removes relocations that are likely outliers based on a user-provided threshold for either speed or distance traveled. Based on the outlie() function of the ctmm package.
 
 ## Documentation
 
@@ -20,9 +20,9 @@ none
 
 ### Settings
 
-`Select variable`: select a variable to be used for filtering.  
+`Select variable`: select a variable to be used for filtering. Options are speed or distance moved. Default is X (? PLEASE ADAPT)
 
-`Range`: select an acceptable range for the selected variable.   
+`Range`: select an acceptable range for the selected variable. Any relocations that are not within the user-set range will be removed from the data set.  
 
 `Store settings`: click to store the current settings of the app for future workflow runs  
 

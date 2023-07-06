@@ -2,10 +2,7 @@
   "dependencies": {
     "R": [
       {
-        "name": "lubridate",
-      },
-      {
-        "name": "move"
+        "name": "shiny",
       },
       {
         "name": "ctmm"
@@ -33,7 +30,7 @@
       }
     ]
   },
-  "createsArtifacts": true,
+  "createsArtifacts": false,
   "license": {
     "key": "MIT"
   },
