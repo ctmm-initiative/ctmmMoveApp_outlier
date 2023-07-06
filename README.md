@@ -20,7 +20,7 @@ none
 
 ### Settings
 
-`Select variable`: select a variable to be used for filtering. Options are speed or distance moved. Default is X (? PLEASE ADAPT)
+`Select variable`: select a variable to be used for filtering. Options are speed or distance moved. Default is speed. 
 
 `Range`: select an acceptable range for the selected variable. Any relocations that are not within the user-set range will be removed from the data set.  
 
