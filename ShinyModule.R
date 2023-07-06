@@ -120,6 +120,7 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     
     gg <- ggplot(plot_data, aes(x=speed)) + 
       geom_histogram_interactive(hover_nearest = TRUE) +
+      labs(x = if (input$select_var == "speed") "Speed" else "Distance") +
       theme_ipsum_rc()
     girafe(ggobj = gg)
 
