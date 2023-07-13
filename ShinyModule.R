@@ -96,13 +96,11 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     quantiles = quantile(reactive_data()$speed, probs = seq(0, 1, by = 0.05))
     quantiles = quantiles[!duplicated(quantiles)]
     ind <- which(round(as.numeric(quantiles), 6) %in% round(as.numeric(input$slider_filtertest), 6))
-    # print(paste0("Range: ", names(quantiles)[ind]))
     updateSliderTextInput(session = session, inputId = "slider_filterperc", selected = names(quantiles)[ind])
   }, ignoreInit = TRUE)
 
   observeEvent(input$slider_filterperc,  {
     req(input$slider_filtertest)
-    # browser()
 
     quantiles = quantile(reactive_data()$speed, probs = seq(0, 1, by = 0.05))
     quantiles = quantiles[!duplicated(quantiles)]
@@ -120,7 +118,7 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     
     gg <- ggplot(plot_data, aes(x=speed)) + 
       geom_histogram_interactive(hover_nearest = TRUE) +
-      labs(x = if (input$select_var == "speed") "Speed" else "Distance") +
+      labs(x = if (input$select_var == "speed") "Speed (m/s)" else "Distance (m)") +
       theme_ipsum_rc()
     girafe(ggobj = gg)
 
@@ -130,9 +128,8 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     req(input$slider_filter)
     req(input$select_var)
     
-    if(input$select_var == "speed"){
-      map2(data, outl, function(a,b){
-        
+    if(input$select_var == "speed") {
+      map2(data, outl, function(a, b) {
         ind <- which(b$speed >= input$slider_filtertest[1] & 
                        b$speed <= input$slider_filtertest[2])
         if (length(ind) > 0) {
@@ -142,9 +139,8 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
         }
         
       })
-    } else if(input$select_var == "distance"){
+    } else if(input$select_var == "distance") {
       map2(data, outl, function(a,b){
-        
         ind <- which(b$speed >= input$slider_filtertest[1] & 
                        b$speed <= input$slider_filtertest[2])
         if (length(ind) > 0) {
@@ -152,12 +148,11 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
         } else {
           NULL
         }
-        
       })
     }
   })
   
-  return(reactive({filtered_data})) ## if data are not modified, the unmodified input data must be returned
+  return(filtered_data()) ## if data are not modified, the unmodified input data must be returned
 }
 
 

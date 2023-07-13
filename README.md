@@ -2,7 +2,7 @@
 
 MoveApps
 
-Github repository: https://github.com/ctmm-initiative/moveapps_ctmm_outlier
+Github repository: https://github.com/ctmm-initiative/ctmmMoveApp_outlier
 
 ## Description
 This app removes relocations that are likely outliers based on a user-provided threshold for either speed or distance traveled. Based on the outlie() function of the ctmm package.
