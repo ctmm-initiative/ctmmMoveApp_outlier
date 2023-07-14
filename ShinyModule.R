@@ -93,9 +93,9 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
   
   observeEvent(input$select_var, {
     if (input$select_var == "speed") {
-      shinyjs::show(ns("recursive"))
+      shinyjs::show("recursive")
     } else {
-      shinyjs::hideElement(ns("recursive"))
+      shinyjs::hide("recursive")
     }
   })
   
