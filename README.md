@@ -24,6 +24,8 @@ none
 
 `Range`: select an acceptable range for the selected variable. Any relocations that are not within the user-set range will be removed from the data set.  
 
+`Recursive`: indicates if the filtering should be done recursively (i.e., if removing one point creates a new step that exceeds the speed threshold this point will also removed). 
+
 `Store settings`: click to store the current settings of the app for future workflow runs  
 
 
