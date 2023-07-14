@@ -7,6 +7,7 @@ library(hrbrthemes)
 library(ctmm)
 library(purrr)
 library(shinyWidgets)
+library(shinyjs)
 
 # set some default styling for ggirafe
 css_default_hover <- girafe_css_bicolor(primary = "#8f7d75", secondary = "#fadccf")
@@ -27,17 +28,25 @@ set_girafe_defaults(
 shinyModuleUserInterface <- function(id, label) {
   ns <- NS(id) ## all IDs of UI functions need to be wrapped in ns()
   tagList(
+    useShinyjs(),
     titlePanel("Outlier detection"),
     plotOutput(ns("outl_plot")),
     p("On the x-axis distances from the median longitude and latitude are ploted and on the y-axis the minimum speed required to explain the location estimate's displacement as straight-line motion."), 
     hr(),
-    selectInput(
-      ns("select_var"),
-      label = "Select Variable",
-      choices =
-        c("Speed" = "speed",
-          "Distance" = "distance")
-    ),
+    fluidRow(
+      column(6, 
+             selectInput(
+               ns("select_var"),
+               label = "Select Variable",
+               choices =
+                 c("Speed (m/s)" = "speed",
+                   "Distance (m)" = "distance")
+             )
+             
+      ),
+      column(6, 
+             uiOutput(ns("recursiveUI"))
+      )), 
     uiOutput(ns("moreControls")),
     uiOutput(ns("moreControls2")),
     girafeOutput(ns("plot"))
@@ -47,14 +56,55 @@ shinyModuleUserInterface <- function(id, label) {
 shinyModule <- function(input, output, session, data){ ## The parameter "data" is reserved for the data object passed on from the previous app
   ns <- session$ns ## all IDs of UI functions need to be wrapped in ns()
   
-  outl <- lapply(data, \(x) outlie(x, plot = FALSE))
+  outl <- reactive({
+  
+#  req(input$filtertest)
+#    lapply(data, \(x) {
+#      xx <- outlie(x, plot = FALSE)
+#      xx})
+    #lapply(data, \(x) {
+    #  xx <- outlie(x, plot = FALSE)
+    #  if (input$recursive) {
+    #    while(max(xx[[input$select_var]]) > input$filtertest[2]) {
+    #      srk_tl <- srk_tl[!xx[[input$select_var]] < input$filtertest[2], ]
+    #      xx <- outlie(srk_tl, plot = FALSE)
+    #    }
+    #  }
+    #  xx
+    #})
+    
+    lapply(data, \(x) {
+      xx <- outlie(x, plot = FALSE)
+      if(!is.null(input$recursive) & !is.null(input$filtertest)) {
+        if (input$select_var == "speed" & input$recursive) {
+          while(max(xx[["speed"]]) > input$filtertest[2]) {
+            srk_tl <- srk_tl[!xx[["speed"]] < input$filtertest[2], ]
+            xx <- outlie(srk_tl, plot = FALSE)
+          }
+        }
+      }
+      xx
+    })
+  })
+  
+  output$recursiveUI <- renderUI({
+      checkboxInput(ns("recursive"), "Recursive", value = FALSE)
+  })
+  
+  observeEvent(input$select_var, {
+    if (input$select_var == "speed") {
+      shinyjs::show(ns("recursive"))
+    } else {
+      shinyjs::hideElement(ns("recursive"))
+    }
+  })
   
   output$outl_plot <- renderPlot({
-    plot(outl)
+    plot(outl())
   })
   
   reactive_data <- reactive({
-    outl_tibbl <- unlist(sapply(outl, \(x) x[, input$select_var])) 
+    outl_tibbl <- unlist(sapply(outl(), \(x) x[, input$select_var])) 
     outl_tibbl <- outl_tibbl|> 
       as_tibble() |> 
       pivot_longer(everything(), names_to = "Individium", values_to = "speed")
@@ -124,12 +174,13 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
 
   })
   
-  filtered_data <- reactive({ 
-    req(input$slider_filter)
+  dat.f <- reactive({ 
+    
+    req(input$slider_filtertest)
     req(input$select_var)
     
-    if(input$select_var == "speed") {
-      map2(data, outl, function(a, b) {
+    xx <- if(input$select_var == "speed") {
+      map2(data, outl(), function(a, b) {
         ind <- which(b$speed >= input$slider_filtertest[1] & 
                        b$speed <= input$slider_filtertest[2])
         if (length(ind) > 0) {
@@ -137,10 +188,9 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
         } else {
           NULL
         }
-        
       })
     } else if(input$select_var == "distance") {
-      map2(data, outl, function(a,b){
+      map2(data, outl(), function(a, b) {
         ind <- which(b$speed >= input$slider_filtertest[1] & 
                        b$speed <= input$slider_filtertest[2])
         if (length(ind) > 0) {
@@ -150,9 +200,15 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
         }
       })
     }
+    xx
   })
   
-  return(filtered_data()) ## if data are not modified, the unmodified input data must be returned
+  #return(reactive(filtered_data())) ## if data are not modified, the unmodified input data must be returned
+  return(
+    reactive({
+      dat.f()
+    })
+  )
 }
 
 
