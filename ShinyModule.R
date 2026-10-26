@@ -186,7 +186,8 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
   observeEvent(input$slider_filtertest,  {
     req(input$slider_filterperc)
     quantiles <- slider_quantiles()
-    ind <- which(round(as.numeric(quantiles), 6) %in% round(as.numeric(input$slider_filtertest), 6))
+    ind <- match(round(as.numeric(input$slider_filtertest), 6), round(as.numeric(quantiles), 6))
+    req(!anyNA(ind))
     new_perc <- names(quantiles)[ind]
     if (!identical(new_perc, input$slider_filterperc)) {
       updateSliderTextInput(session = session, inputId = "slider_filterperc", selected = new_perc)
@@ -197,7 +198,8 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     req(input$slider_filtertest)
 
     quantiles <- slider_quantiles()
-    ind <- which(names(quantiles) %in% input$slider_filterperc)
+    ind <- match(input$slider_filterperc, names(quantiles))
+    req(!anyNA(ind))
     new_vals <- round(as.numeric(quantiles)[ind], 6)
     if (!isTRUE(all.equal(new_vals, as.numeric(input$slider_filtertest)))) {
       updateSliderTextInput(session = session, inputId = "slider_filtertest", selected = new_vals)
