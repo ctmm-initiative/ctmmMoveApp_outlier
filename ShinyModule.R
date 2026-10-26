@@ -7,7 +7,6 @@ library(hrbrthemes)
 library(ctmm)
 library(purrr)
 library(shinyWidgets)
-library(shinyjs)
 library(shinycssloaders)
 
 # set some default styling for ggirafe
@@ -29,7 +28,6 @@ set_girafe_defaults(
 shinyModuleUserInterface <- function(id, label) {
   ns <- NS(id) ## all IDs of UI functions need to be wrapped in ns()
   tagList(
-    useShinyjs(),
     titlePanel("Outlier detection"),
     p("On the x-axis distances from the median longitude and latitude are ploted and on the y-axis the minimum speed required to explain the location estimate's displacement as straight-line motion."),
     fluidRow(
@@ -44,7 +42,12 @@ shinyModuleUserInterface <- function(id, label) {
 
       ),
       column(6,
-             uiOutput(ns("recursiveUI"))
+             # Recursion only applies to speed, so only show it then
+             conditionalPanel(
+               condition = "input.select_var == 'speed'",
+               ns = ns,
+               checkboxInput(ns("recursive"), "Recursive", value = FALSE)
+             )
       )),
     uiOutput(ns("moreControls")),
     uiOutput(ns("moreControls2")),
@@ -103,18 +106,6 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     req(length(outl_tibbl) > 0)
     q <- quantile(outl_tibbl, probs = seq(0, 1, by = 0.01))
     q[!duplicated(q)]
-  })
-
-  output$recursiveUI <- renderUI({
-      checkboxInput(ns("recursive"), "Recursive", value = FALSE)
-  })
-
-  observeEvent(input$select_var, {
-    if (input$select_var == "speed") {
-      shinyjs::show(ns("recursive"))
-    } else {
-      shinyjs::hide(ns("recursive"))
-    }
   })
 
   filtered_outl <- reactive({

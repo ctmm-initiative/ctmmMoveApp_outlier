@@ -29,9 +29,6 @@
         "name": "shinyWidgets"
       },
       {
-        "name": "shinyjs"
-      },
-      {
         "name": "shinycssloaders"
       }
     ]
