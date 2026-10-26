@@ -204,28 +204,16 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     req(input$slider_filtertest)
     req(input$select_var)
 
-    xx <- if(input$select_var == "speed") {
-      map2(data, outl(), function(a, b) {
-        ind <- which(b$speed >= input$slider_filtertest[1] &
-                       b$speed <= input$slider_filtertest[2])
-        if (length(ind) > 0) {
-          a[ind, ]
-        } else {
-          NULL
-        }
-      })
-    } else if(input$select_var == "distance") {
-      map2(data, outl(), function(a, b) {
-        ind <- which(b$speed >= input$slider_filtertest[1] &
-                       b$speed <= input$slider_filtertest[2])
-        if (length(ind) > 0) {
-          a[ind, ]
-        } else {
-          NULL
-        }
-      })
-    }
-    xx
+    var <- input$select_var
+    map2(data, outl(), function(a, b) {
+      ind <- which(b[[var]] >= input$slider_filtertest[1] &
+                     b[[var]] <= input$slider_filtertest[2])
+      if (length(ind) > 0) {
+        a[ind, ]
+      } else {
+        NULL
+      }
+    })
   })
 
   #return(reactive(filtered_data())) ## if data are not modified, the unmodified input data must be returned
