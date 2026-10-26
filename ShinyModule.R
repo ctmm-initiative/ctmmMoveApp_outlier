@@ -76,7 +76,7 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
       map2(data, outl_raw(), function(x, xx) {
         rows <- seq_len(nrow(x))
         while (nrow(x) > 0 && max(xx[["speed"]]) > threshold) {
-          keep <- xx[["speed"]] < threshold
+          keep <- xx[["speed"]] <= threshold
           if (!any(keep)) break
           x <- x[keep, ]
           rows <- rows[keep]
