@@ -51,6 +51,7 @@ shinyModuleUserInterface <- function(id, label) {
       )),
     uiOutput(ns("moreControls")),
     uiOutput(ns("moreControls2")),
+    uiOutput(ns("dropped_note")),
     hr(),
     fluidRow(
       column(6, withSpinner(plotOutput(ns("outl_plot"), height = "400px"), hide.ui = FALSE)),
@@ -225,10 +226,13 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
 
   })
 
-  dat.f <- reactive({
+  # Each individual's data within the selected range; NULL if it has no points in range
+  filtered_data <- reactive({
 
     req(input$slider_filtertest)
     req(input$select_var)
+    # Wait for the slider to be rebuilt after the variable changes
+    req(all(round(as.numeric(input$slider_filtertest), 6) %in% round(as.numeric(slider_quantiles()), 6)))
 
     var <- input$select_var
     lo <- bounds()[1]
@@ -242,6 +246,43 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
         NULL
       }
     })
+  })
+
+  # Individuals with no points in range, which are left out of the output
+  dropped_ids <- reactive({
+    names(purrr::keep(filtered_data(), is.null))
+  })
+
+  output$dropped_note <- renderUI({
+    ids <- dropped_ids()
+    if (length(ids) == 0) return(NULL)
+    p(
+      class = "text-warning",
+      paste0(
+        "No points in the selected range for: ", paste(ids, collapse = ", "),
+        ". These animals will not be passed to the next app."
+      )
+    )
+  })
+
+  dat.f <- reactive({
+    ids <- dropped_ids()
+    if (length(ids) > 0) {
+      logger.warn(
+        "No points in the selected range for: %s. Removed from the output.",
+        paste(ids, collapse = ", ")
+      )
+    }
+
+    # Remove NULL entries, which result from individuals with no points that
+    # meet the input thresholds. Downstream apps may fail on NULL input.
+    filtered <- purrr::compact(filtered_data())
+
+    if (length(filtered) == 0) {
+      NULL
+    } else {
+      filtered
+    }
   })
 
   #return(reactive(filtered_data())) ## if data are not modified, the unmodified input data must be returned
