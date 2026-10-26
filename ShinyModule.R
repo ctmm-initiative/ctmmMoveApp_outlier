@@ -127,17 +127,20 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     var <- input$select_var
     lo <- bounds()[1]
     hi <- bounds()[2]
-    lapply(outl(), \(x) {
+    filtered <- lapply(outl(), \(x) {
       keep <- x[[var]] >= lo & x[[var]] <= hi
-      if (!any(keep)) return(x)
       out <- x[keep, , drop = FALSE]
       # `outlie` is an S4 object; data.frame subsetting drops that bit and breaks plot dispatch.
       class(out) <- class(x)
       asS4(out)
     })
+    # Leave out individuals with no points in range, matching the returned
+    # data. ctmm's plot method can't draw an individual with zero rows.
+    purrr::keep(filtered, \(x) nrow(x) > 0)
   })
 
   output$outl_plot <- renderPlot({
+    validate(need(length(filtered_outl()) > 0, "No points in the selected range."))
     plot(filtered_outl())
   })
 
@@ -209,6 +212,8 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
 
     plot_data <- reactive_data() |>
       filter(speed >= lo & speed <= hi)
+
+    validate(need(nrow(plot_data) > 0, "No points in the selected range."))
 
     gg <- ggplot(plot_data, aes(x=speed)) +
       geom_histogram_interactive(hover_nearest = TRUE) +
