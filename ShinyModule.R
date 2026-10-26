@@ -65,23 +65,35 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     lapply(data, \(x) outlie(x, plot = FALSE))
   })
 
-  outl <- reactive({
+  outl_rows <- reactive({
     if (input$select_var == "speed" &&
         isTRUE(input$recursive) &&
         !is.null(input$slider_filtertest)) {
       threshold <- input$slider_filtertest[2]
       map2(data, outl_raw(), function(x, xx) {
+        rows <- seq_len(nrow(x))
         while (nrow(x) > 0 && max(xx[["speed"]]) > threshold) {
           keep <- xx[["speed"]] < threshold
           if (!any(keep)) break
           x <- x[keep, ]
+          rows <- rows[keep]
           xx <- outlie(x, plot = FALSE)
         }
-        xx
+        
+        # Return row indices along with outlier output. When `recursive = TRUE`,
+        # we remove some rows from the data at each pass, meaning that the
+        # indices can drift from the original input to the data that we're
+        # actually returning. Passing `rows` along means we can index relative
+        # to the original data.
+        list(outl = xx, rows = rows)
       })
     } else {
-      outl_raw()
+      map2(data, outl_raw(), \(x, xx) list(outl = xx, rows = seq_len(nrow(x))))
     }
+  })
+
+  outl <- reactive({
+    lapply(outl_rows(), \(r) r$outl)
   })
 
   # Quantile choices for the sliders, computed from raw outliers only.
@@ -205,11 +217,12 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     req(input$select_var)
 
     var <- input$select_var
-    map2(data, outl(), function(a, b) {
+    map2(data, outl_rows(), function(a, r) {
+      b <- r$outl
       ind <- which(b[[var]] >= input$slider_filtertest[1] &
                      b[[var]] <= input$slider_filtertest[2])
       if (length(ind) > 0) {
-        a[ind, ]
+        a[r$rows[ind], ]
       } else {
         NULL
       }
