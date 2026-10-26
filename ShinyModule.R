@@ -72,7 +72,7 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     if (input$select_var == "speed" &&
         isTRUE(input$recursive) &&
         !is.null(input$slider_filtertest)) {
-      threshold <- input$slider_filtertest[2]
+      threshold <- bounds()[2]
       map2(data, outl_raw(), function(x, xx) {
         rows <- seq_len(nrow(x))
         while (nrow(x) > 0 && max(xx[["speed"]]) > threshold) {
@@ -105,14 +105,28 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     outl_tibbl <- unlist(sapply(outl_raw(), \(x) x[, input$select_var]))
     req(length(outl_tibbl) > 0)
     q <- quantile(outl_tibbl, probs = seq(0, 1, by = 0.01))
-    q[!duplicated(q)]
+    # Drop quantiles that would show as the same value on the slider
+    q[!duplicated(round(as.numeric(q), 6))]
+  })
+
+  # Filter bounds for the current slider selection. The slider shows quantiles
+  # rounded to 6 decimals; filtering on those rounded values can drop a point
+  # sitting exactly at a quantile (e.g. the minimum at 0%). So look up the
+  # unrounded quantile behind each selected value and filter on that instead.
+  bounds <- reactive({
+    req(input$slider_filtertest)
+    sel <- as.numeric(input$slider_filtertest)
+    q <- as.numeric(slider_quantiles())
+    idx <- match(round(sel, 6), round(q, 6))
+    # No match while the slider is still being rebuilt for a new variable
+    ifelse(is.na(idx), sel, q[idx])
   })
 
   filtered_outl <- reactive({
     if (is.null(input$slider_filtertest)) return(outl())
     var <- input$select_var
-    lo <- input$slider_filtertest[1]
-    hi <- input$slider_filtertest[2]
+    lo <- bounds()[1]
+    hi <- bounds()[2]
     lapply(outl(), \(x) {
       keep <- x[[var]] >= lo & x[[var]] <= hi
       if (!any(keep)) return(x)
@@ -190,9 +204,11 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
   output$plot <- renderGirafe({
 
     req(input$slider_filtertest)
+    lo <- bounds()[1]
+    hi <- bounds()[2]
 
     plot_data <- reactive_data() |>
-      filter(speed >= input$slider_filtertest[1] & speed <= input$slider_filtertest[2])
+      filter(speed >= lo & speed <= hi)
 
     gg <- ggplot(plot_data, aes(x=speed)) +
       geom_histogram_interactive(hover_nearest = TRUE) +
@@ -208,10 +224,11 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     req(input$select_var)
 
     var <- input$select_var
+    lo <- bounds()[1]
+    hi <- bounds()[2]
     map2(data, outl_rows(), function(a, r) {
       b <- r$outl
-      ind <- which(b[[var]] >= input$slider_filtertest[1] &
-                     b[[var]] <= input$slider_filtertest[2])
+      ind <- which(b[[var]] >= lo & b[[var]] <= hi)
       if (length(ind) > 0) {
         a[r$rows[ind], ]
       } else {
