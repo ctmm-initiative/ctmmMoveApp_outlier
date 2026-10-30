@@ -63,6 +63,9 @@ shinyModuleUserInterface <- function(id, label) {
 shinyModule <- function(input, output, session, data){ ## The parameter "data" is reserved for the data object passed on from the previous app
   ns <- session$ns ## all IDs of UI functions need to be wrapped in ns()
 
+  # Range from stored settings, if any. NULL when there are none.
+  restored_range <- restoreInput(ns("slider_filtertest"), NULL)
+
   # Raw outliers; not affected by recursion. Drives the slider's quantile space
   # so its range stays anchored to the actual data max.
   outl_raw <- reactive({
@@ -70,9 +73,7 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
   })
 
   outl_rows <- reactive({
-    if (input$select_var == "speed" &&
-        isTRUE(input$recursive) &&
-        !is.null(input$slider_filtertest)) {
+    if (input$select_var == "speed" && isTRUE(input$recursive)) {
       threshold <- bounds()[2]
       map2(data, outl_raw(), function(x, xx) {
         rows <- seq_len(nrow(x))
@@ -110,13 +111,29 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
     q[!duplicated(round(as.numeric(q), 6))]
   })
 
+  # The app's output data are only produced once a range has been selected
+  # If the UI hasn't opened, the range limits aren't passed and the output 
+  # data aren't produced. Here we set default range limits so that the output
+  # data can be produced even if the UI hasn't been opened. Use the slider
+  # values, but if they don't exist yet, use the bookmarked settings. If neither
+  # exist, use the full data range.
+  selected_range <- reactive({
+    if (!is.null(input$slider_filtertest)) {
+      as.numeric(input$slider_filtertest)
+    } else if (!is.null(restored_range)) {
+      as.numeric(restored_range)
+    } else {
+      q <- as.numeric(slider_quantiles())
+      c(q[1], q[length(q)])
+    }
+  })
+  
   # Filter bounds for the current slider selection. The slider shows quantiles
   # rounded to 6 decimals; filtering on those rounded values can drop a point
   # sitting exactly at a quantile (e.g. the minimum at 0%). So look up the
   # unrounded quantile behind each selected value and filter on that instead.
   bounds <- reactive({
-    req(input$slider_filtertest)
-    sel <- as.numeric(input$slider_filtertest)
+    sel <- selected_range()
     q <- as.numeric(slider_quantiles())
     idx <- match(round(sel, 6), round(q, 6))
     # No match while the slider is still being rebuilt for a new variable
@@ -229,10 +246,10 @@ shinyModule <- function(input, output, session, data){ ## The parameter "data" i
   # Each individual's data within the selected range; NULL if it has no points in range
   filtered_data <- reactive({
 
-    req(input$slider_filtertest)
     req(input$select_var)
     # Wait for the slider to be rebuilt after the variable changes
-    req(all(round(as.numeric(input$slider_filtertest), 6) %in% round(as.numeric(slider_quantiles()), 6)))
+    req(is.null(input$slider_filtertest) ||
+          all(round(as.numeric(input$slider_filtertest), 6) %in% round(as.numeric(slider_quantiles()), 6)))
 
     var <- input$select_var
     lo <- bounds()[1]
